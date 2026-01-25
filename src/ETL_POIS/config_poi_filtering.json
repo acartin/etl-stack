@@ -1,0 +1,415 @@
+{
+    "osm": {
+        "tags_of_interest": [
+            "amenity",
+            "shop",
+            "tourism",
+            "leisure",
+            "building",
+            "natural",
+            "landuse",
+            "sport",
+            "healthcare",
+            "office",
+            "emergency"
+        ]
+    },
+    "poi_categories": {
+        "Sport_Leisure": {
+            "keywords": [
+                "plaza de deportes",
+                "plaza deportes",
+                "cancha",
+                "estadio",
+                "polideportivo",
+                "gym",
+                "gimnasio",
+                "fitness",
+                "crossfit",
+                "piscina"
+            ],
+            "tags": {
+                "leisure": [
+                    "pitch",
+                    "sports_centre",
+                    "stadium",
+                    "fitness_centre",
+                    "swimming_pool",
+                    "golf_course",
+                    "tennis",
+                    "yoga"
+                ],
+                "sport": [
+                    "soccer",
+                    "fitness",
+                    "swimming",
+                    "tennis",
+                    "basketball"
+                ]
+            },
+            "exclude_keywords": []
+        },
+        "Charging_Infrastructure": {
+            "keywords": [
+                "estacion de carga",
+                "carga electrica",
+                "charging station",
+                "tesla supercharger",
+                "cargador",
+                "punto de recarga"
+            ],
+            "tags": {
+                "amenity": [
+                    "charging_station"
+                ]
+            },
+            "exclude_keywords": []
+        },
+        "Education": {
+            "keywords": [
+                "escuela",
+                "colegio",
+                "liceo",
+                "ctp",
+                "universidad",
+                "kinder",
+                "school",
+                "Academia",
+                "CEDES Don Bosco",
+                "Centro Educativo",
+                "Colegio Técnico Profesional",
+                "UCR",
+                "ULACIT",
+                "UNA",
+                "UNED",
+                "UTN",
+                "ULATINA"
+            ],
+            "tags": {
+                "amenity": [
+                    "school",
+                    "university",
+                    "college",
+                    "kindergarten",
+                    "language_school",
+                    "music_school"
+                ]
+            },
+            "exclude_keywords": [
+                "Bosque",
+                "Bus",
+                "Capilla",
+                "Abogados",
+                "Biologos",
+                "Contadores",
+                "Geologos",
+                "Licenciados",
+                "Microbiologos",
+                "Optometristas",
+                "colegio de profesionales",
+                "colegio de quimicos",
+                "colegio de terapeutas",
+                "colegio de trabajadores",
+                "colegio Ingenieros Agronomos",
+                "Colonia Colegio",
+                "Editorial",
+                "colegio de abogados",
+                "colegio de abagados",
+                "colegio de médicos",
+                "colegio de ingenieros",
+                "colegio de cirujanos",
+                "colegio de enfermeras",
+                "colegio de farmacéuticos",
+                "colegio de psicólogos",
+                "colegio federado",
+                "ciencias políticas",
+                "ciencias económicas",
+                "pensionados",
+                "colegio de periodistas",
+                "Escuela de ciencias",
+                "muebleria",
+                "parada",
+                "parque",
+                "plaza",
+                "proveeduria",
+                "pulperia",
+                "soda",
+                "radio",
+                "residencial",
+                "semanario",
+                "terminal",
+                "urb.",
+                "vivero",
+                "asociación",
+                "federación",
+                "gremio",
+                "sindicato"
+            ]
+        },
+        "Health": {
+            "keywords": [
+                "hospital",
+                "clinica",
+                "ebais",
+                "farmacia",
+                "pharmacy",
+                "doctor",
+                "CCSS-Area de Salud",
+                "CSSS-Sucursal",
+                "CECUDI",
+                "CEN-CINAI",
+                "Centro de Atención Institucional",
+                "Centro Diurno",
+                "Centro Medico",
+                "Cruz Roja",
+                "Hogar de Ancianos"
+            ],
+            "tags": {
+                "amenity": [
+                    "hospital",
+                    "clinic",
+                    "pharmacy",
+                    "doctors",
+                    "dentist"
+                ],
+                "healthcare": [
+                    "laboratory",
+                    "physiotherapist",
+                    "optometrist"
+                ]
+            },
+            "exclude_keywords": [
+                "Delegacion Plicial",
+                "parada",
+                "PC",
+                "soda",
+                "automotriz",
+                "terminal",
+                "veterinaria",
+                "mascotas"
+            ]
+        },
+        "Convenience": {
+            "keywords": [
+                "super",
+                "pulpería",
+                "mall",
+                "plaza comercial",
+                "centro comercial",
+                "banco",
+                "atm",
+                "ferretería",
+                "Abastecedor",
+                "Abast.",
+                "Almacen",
+                "AM PM",
+                "Automercado",
+                "Autoservicio",
+                "BAC Credomatic",
+                "BCR",
+                "Correos de Costa Rica",
+                "Davivienda",
+                "Delta",
+                "Gasolinera",
+                "El lagar",
+                "Estacion de carga",
+                "Estacion de servicio",
+                "Feria del agricultor",
+                "Fresh Market",
+                "Grupo Mutual",
+                "Lavanderia",
+                "Lavacar",
+                "Mas x menos",
+                "MiniSuper",
+                "Musmani",
+                "Pali",
+                "Panaderia",
+                "Pequeño Mundo",
+                "PriceSmart",
+                "ScotiaBank",
+                "Servicentro",
+                "Supermercado",
+                "Veterinaria",
+                "Vindi",
+                "Walmart"
+            ],
+            "tags": {
+                "amenity": [
+                    "bank",
+                    "atm",
+                    "marketplace",
+                    "fuel",
+                    "charging_station",
+                    "post_office",
+                    "courier",
+                    "veterinary"
+                ],
+                "shop": [
+                    "convenience",
+                    "supermarket",
+                    "department_store",
+                    "bakery",
+                    "general",
+                    "mall",
+                    "laundry"
+                ]
+            },
+            "exclude_keywords": []
+        },
+        "Restaurant_Cafe": {
+            "keywords": [
+                "restaurante",
+                "restaurant",
+                "cafe",
+                "cafeteria",
+                "soda",
+                "bar",
+                "pub",
+                "comida rapida",
+                "fast food"
+            ],
+            "tags": {
+                "amenity": [
+                    "restaurant",
+                    "cafe",
+                    "bar",
+                    "pub",
+                    "fast_food",
+                    "food_court",
+                    "ice_cream"
+                ]
+            },
+            "exclude_keywords": [
+                "parada",
+                "terminal",
+                "bus"
+            ]
+        },
+        "Nature_Tourism": {
+            "keywords": [
+                "playa",
+                "beach",
+                "volcan",
+                "mirador",
+                "catarata",
+                "river",
+                "bahia",
+                "parque nacional",
+                "reserva"
+            ],
+            "tags": {
+                "tourism": [
+                    "attraction",
+                    "viewpoint",
+                    "museum",
+                    "gallery",
+                    "theme_park"
+                ],
+                "natural": [
+                    "beach",
+                    "volcano",
+                    "waterfall"
+                ],
+                "leisure": [
+                    "park",
+                    "nature_reserve",
+                    "garden"
+                ]
+            },
+            "exclude_keywords": [
+                "Abastecedor",
+                "Abast.",
+                "Acopio",
+                "Apartotel",
+                "Aptos.",
+                "Apartamentos",
+                "Ave",
+                "Asada",
+                "Bar",
+                "Boulevard",
+                "cond.",
+                "casa",
+                "cafe",
+                "Futbol",
+                "urb.",
+                "Urbanizacion",
+                "Gollo",
+                "minisuper",
+                "pulp",
+                "pulperia",
+                "soda",
+                "tramo",
+                "Delegacion policial",
+                "gasolinera",
+                "residencial",
+                "resid.",
+                "restaurante",
+                "rest",
+                "servicios Medicos",
+                "Villas",
+                "Lodge",
+                "vivero",
+                "voleibol"
+            ]
+        },
+        "Safety": {
+            "keywords": [
+                "policia",
+                "delegacion",
+                "bomberos",
+                "seguridad",
+                "cruz roja"
+            ],
+            "tags": {
+                "amenity": [
+                    "police",
+                    "fire_station"
+                ],
+                "emergency": [
+                    "fire_station"
+                ]
+            },
+            "exclude_keywords": [
+                "Abastecedor",
+                "Centro de Desarrollo",
+                "Consejo de Seguridad Vial",
+                "Instituto",
+                "Direccion",
+                "Ministerio",
+                "Oficina",
+                "Administracion y Seguridad"
+            ]
+        },
+        "Shopping": {
+            "keywords": [
+                "tienda",
+                "boutique",
+                "ropa",
+                "zapatos",
+                "joyeria",
+                "electronicos",
+                "muebles"
+            ],
+            "tags": {
+                "shop": [
+                    "clothes",
+                    "shoes",
+                    "jewelry",
+                    "sports",
+                    "electronics",
+                    "mobile_phone",
+                    "computer",
+                    "furniture",
+                    "hardware",
+                    "garden_centre",
+                    "pet",
+                    "books",
+                    "toys",
+                    "cosmetics",
+                    "beauty"
+                ]
+            },
+            "exclude_keywords": []
+        }
+    }
+}

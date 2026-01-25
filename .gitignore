@@ -1,0 +1,17 @@
+# --- Credenciales ---
+.env
+src/.env
+
+# --- Logs ---
+*.log
+src/*.txt
+
+# --- Datos y Almacenamiento ---
+src/ETL_PROPERTIES/output/
+staging/
+storage/
+temp/
+
+# --- Python ---
+__pycache__/
+*.pyc

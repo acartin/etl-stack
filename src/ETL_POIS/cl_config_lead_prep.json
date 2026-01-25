@@ -1,0 +1,195 @@
+{
+    "tier1_categories": {
+        "Education": {
+            "radius_km": 15,
+            "min_quality_score": 15,
+            "priority_brands": [
+                "Blue Valley",
+                "Country Day",
+                "Lincoln School",
+                "Saint Mary",
+                "Pan-American School",
+                "Colegio Humboldt",
+                "British School",
+                "Liceo Franco Costarricense",
+                "Colegio SEK",
+                "Saint Clare",
+                "Saint Gregory",
+                "Saint Francis",
+                "Colegio Yorkín",
+                "Colegio Iribó",
+                "Marian Baker School",
+                "Anglo American School",
+                "International Christian School",
+                "Lighthouse International",
+                "Colegio Calasanz",
+                "Colegio La Salle",
+                "Colegio Metodista",
+                "Universidad de Costa Rica",
+                "Universidad Latina",
+                "Universidad Fidélitas",
+                "ULACIT",
+                "UACA",
+                "Universidad Hispanoamericana",
+                "UCIMED",
+                "Universidad VERITAS",
+                "Universidad San Judas Tadeo",
+                "Universidad Santa Paula",
+                "Texas Tech University",
+                "INCAE"
+            ],
+            "limit": 10
+        },
+        "Health": {
+            "radius_km": 15,
+            "min_quality_score": 15,
+            "priority_brands": [
+                "Hospital CIMA",
+                "Clínica Bíblica",
+                "Hospital La Católica",
+                "Hospital Metropolitano",
+                "Clínica Santa Rita",
+                "Hospital Unibe",
+                "Farmacia Fischel",
+                "Farmacia La Bomba",
+                "Farmacia Sucre"
+            ],
+            "limit": 10
+        },
+        "Convenience": {
+            "radius_km": 5,
+            "min_quality_score": 10,
+            "priority_brands": [
+                "Auto Mercado",
+                "Automercado",
+                "Fresh Market",
+                "PriceSmart",
+                "Vindi",
+                "Mas x Menos",
+                "Saretto",
+                "Palí",
+                "Maxi Palí",
+                "Perimercados",
+                "Super Compro",
+                "AM PM"
+            ],
+            "anchor_brands": [
+                "Auto Mercado",
+                "PriceSmart",
+                "Fresh Market",
+                "Walmart"
+            ],
+            "limit": 25
+        },
+        "Safety": {
+            "radius_km": 3,
+            "min_quality_score": 0,
+            "priority_brands": [],
+            "anchor_brands": [],
+            "limit": 3
+        }
+    },
+    "tier2_categories": {
+        "Restaurant_Cafe": {
+            "radius_km": 3,
+            "min_quality_score": 10,
+            "priority_brands": [
+                "Starbucks",
+                "Olive Garden",
+                "Outback Steakhouse",
+                "PF Chang's",
+                "Johnny Rockets",
+                "Hooligans",
+                "Applebee's",
+                "TGI Fridays",
+                "Cosi",
+                "Spoon",
+                "Saul Bistro",
+                "Bulali",
+                "La Waffleria",
+                "Mocapan",
+                "Quiznos",
+                "Subway",
+                "McDonald's",
+                "Burger King",
+                "Taco Bell",
+                "KFC",
+                "Papa John's",
+                "Pizza Hut",
+                "RostiPollos"
+            ],
+            "anchor_brands": [
+                "Starbucks",
+                "Olive Garden",
+                "PF Chang's"
+            ],
+            "limit": 10
+        },
+        "Sport_Leisure": {
+            "radius_km": 5,
+            "min_quality_score": 10,
+            "priority_brands": [
+                "MultiSpa",
+                "Gold's Gym",
+                "Indoor Club",
+                "Costa Rica Tennis Club",
+                "Country Club",
+                "Orange Theory",
+                "Smart Fit",
+                "World Gym",
+                "Valle del Sol Golf",
+                "Cariari Country Club"
+            ],
+            "limit": 5
+        },
+        "Shopping": {
+            "radius_km": 10,
+            "min_quality_score": 15,
+            "priority_brands": [
+                "Multiplaza",
+                "Momentum Pinares",
+                "Momentum Lindora",
+                "Momentum Escazú",
+                "Avenida Escazú",
+                "Terramall",
+                "City Mall",
+                "Oxígeno",
+                "Lincoln Plaza",
+                "Escazú Village",
+                "Plaza Tempo",
+                "Plaza Real Alajuela",
+                "Paseo de las Flores",
+                "Mall San Pedro",
+                "City Place"
+            ],
+            "limit": 5
+        },
+        "Charging_Infrastructure": {
+            "radius_km": 5,
+            "min_quality_score": 0,
+            "priority_brands": [
+                "Tesla",
+                "Evergo",
+                "CNFL",
+                "ICE",
+                "Blink"
+            ],
+            "anchor_brands": [],
+            "limit": 5
+        }
+    },
+    "tier3_categories": {
+        "Nature_Tourism": {
+            "radius_km": 30,
+            "min_quality_score": 0,
+            "priority_brands": [],
+            "limit": 5
+        }
+    },
+    "walkability_threshold_km": 1.0,
+    "premium_zone_criteria": {
+        "automercado_max_km": 3,
+        "starbucks_max_km": 3,
+        "international_school_max_km": 10
+    }
+}
