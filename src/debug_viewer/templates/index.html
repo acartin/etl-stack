@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Image Debugger</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .property-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .property-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .property-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .property-meta {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .property-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #48bb78;
+        }
+
+        .split-view {
+            display: flex;
+            height: 500px;
+            gap: 20px;
+            padding: 20px;
+            background: #f7fafc;
+        }
+
+        .split-media {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background: #e2e8f0;
+        }
+
+        .split-map {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .main-img-display {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .img-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .img-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .img-container.main-image {
+            border: 2px solid #4299e1;
+            box-shadow: 0 0 0 1px #4299e1;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .img-info {
+            padding: 8px;
+            font-size: 0.75rem;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #4299e1;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .label {
+            color: #718096;
+        }
+
+        .value {
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: #a0aec0;
+        }
+
+        .map-container {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .poi-label {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid #cbd5e0 !important;
+            border-radius: 4px !important;
+            padding: 2px 6px !important;
+            font-size: 0.7rem !important;
+            font-weight: 600 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .poi-bar {
+            padding: 10px 20px;
+            background: #f0fff4;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            color: #276749;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Property Visual Inspector</h1>
+
+        <div
+            style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 15px;">
+            <label for="client_select" style="font-weight: 500; color: #4a5568;">Filtrar por Cliente
+                (Proveedor):</label>
+            <form id="filterForm" action="/" method="get">
+                <select id="client_select" name="client_id" onchange="this.form.submit()"
+                    style="padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 1rem;">
+                    <option value="all">Todos los Clientes</option>
+                    {% for client in clients %}
+                    <option value="{{ client.client_id }}" {% if current_client==client.client_id|string %}selected{%
+                        endif %}>
+                        {{ client.client_name }} ({{ client.provider_type }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px; color: #666;">
+            Mostrando {{ properties|length }} propiedades con imágenes
+        </div>
+
+        {% for prop in properties %}
+        <div class="property-card">
+            <div class="property-header">
+                <div>
+                    <h2 class="property-title">{{ prop.title }}</h2>
+                    <div class="property-meta">
+                        ID: <span style="font-family: monospace;">{{ prop.id }}</span> |
+                        Fotos: <strong>{{ prop.images|length }}</strong>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="property-price">
+                        {{ prop.currency }} {{ "{:,.0f}".format(prop.price) }}
+                    </div>
+                    {% if prop.public_url %}
+                    <div style="margin-top: 5px;">
+                        <a href="{{ prop.public_url }}" target="_blank"
+                            style="font-size: 0.85rem; color: #4299e1; text-decoration: none; border: 1px solid #4299e1; padding: 2px 8px; border-radius: 4px;">VER
+                            ORIGINAL ↗</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="split-view">
+                <div class="split-media">
+                    {% set main_image = none %}
+                    {% for img in prop.images %}
+                    {% if img.is_main %}
+                    {% set main_image = img %}
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if not main_image and prop.images|length > 0 %}
+                    {% set main_image = prop.images[0] %}
+                    {% endif %}
+
+                    {% if main_image %}
+                    <img src="/images/{{ main_image.local_path }}" class="main-img-display" alt="Main Property Image">
+                    <div
+                        style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                        {{ main_image.filename }}
+                    </div>
+                    {% else %}
+                    <div
+                        style="height: 100%; display: flex; align-items: center; justify-content: center; color: #718096;">
+                        No Image Available
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="split-map">
+                    {% if prop.poi_data and prop.location_lat %}
+                    <div id="map-{{ prop.id }}" class="map-container"></div>
+                    {% else %}
+                    <div
+                        style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a0aec0; background: #f7fafc;">
+                        No Map Data
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if prop.poi_data and prop.location_lat %}
+            <div class="poi-bar">
+                <strong>🚶 Walk Score: {{ prop.poi_data.score }} ({{ prop.poi_data.label }})</strong>
+                {% if prop.poi_data.premium %}
+                <span
+                    style="background: #276749; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">PREMIUM
+                    ZONE</span>
+                {% endif %}
+                <span style="color: #4a5568;">{{ prop.poi_data.highlights[0] }}</span>
+            </div>
+            {% endif %}
+
+            <div class="gallery">
+                {% if prop.images %}
+                {% for img in prop.images %}
+                <div class="img-container {% if img.is_main %}main-image{% endif %}">
+                    {% if img.is_main %}
+                    <div class="badge">Main</div>
+                    {% endif %}
+                    <img src="/images/{{ img.local_path }}" loading="lazy" alt="Property Image">
+
+                    {% if img.tags %}
+                    <div style="background: #f7fafc; padding: 6px; border-bottom: 1px solid #edf2f7;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-weight: 700; color: #3182ce; font-size: 0.75rem;">{{ img.tags.room_type
+                                }}</span>
+                            <span
+                                style="background: #2b6cb0; color: white; padding: 1px 4px; border-radius: 4px; font-size: 0.65rem;">★
+                                {{ img.tags.quality_score }}</span>
+                        </div>
+
+                        {% if img.tags.features %}
+                        <div style="display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 3px;">
+                            {% for feat in img.tags.features[:3] %}
+                            <span
+                                style="background: #c6f6d5; color: #22543d; padding: 1px 4px; border-radius: 3px; font-size: 0.6rem; white-space: nowrap;">{{
+                                feat }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {% if img.tags.condition %}
+                        <div style="font-size: 0.65rem; color: #718096;">
+                            <span style="font-weight: 600;">Cond:</span> {{ img.tags.condition }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="img-info">
+                        <div class="info-row">
+                            <span class="label">Size:</span>
+                            <span class="value">{{ img.size_kb }} KB</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Order:</span>
+                            <span class="value">#{{ img.sort_order }}</span>
+                        </div>
+                        <div class="info-row"
+                            style="margin-top: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                            <span class="label" title="{{ img.filename }}">{{ img.filename }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state">No hay imágenes procesadas para esta propiedad.</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            {% for prop in properties %}
+            {% if prop.poi_data and prop.location_lat %}
+            (function () {
+                var mapId = 'map-{{ prop.id }}';
+                var lat = {{ prop.location_lat }};
+            var lng = {{ prop.location_lng }};
+        var map = L.map(mapId).setView([lat, lng], 15);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        L.circle([lat, lng], {
+            color: '#3b82f6',
+            fillColor: '#3b82f6',
+            fillOpacity: 0.1,
+            radius: 1000,
+            weight: 2,
+            dashArray: '5, 5'
+        }).addTo(map);
+
+        var propIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div style='background-color:#e53e3e; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #e53e3e;'></div>",
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
+
+        L.marker([lat, lng], { icon: propIcon }).addTo(map)
+            .bindPopup("<b>{{ prop.title }}</b><br>Propiedad Objetivo")
+            .openPopup();
+
+        var pois = {{ prop.poi_data.map_points | tojson | safe }};
+
+        pois.forEach(function (poi) {
+            var color = poi.color || '#4a5568';
+            var poiIcon = L.divIcon({
+                className: 'poi-icon',
+                html: `<div style='background-color:${color}; width: 8px; height: 8px; border-radius: 50%; border: 1px solid white;'></div>`,
+                iconSize: [10, 10],
+                iconAnchor: [5, 5]
+            });
+
+            L.marker([poi.lat, poi.lng], { icon: poiIcon })
+                .addTo(map)
+                .bindTooltip(poi.name, {
+                    permanent: true,
+                    direction: 'top',
+                    className: 'poi-label',
+                    offset: [0, -5]
+                })
+                .bindPopup(`<b>${poi.name}</b><br><span style="color: ${color}">${poi.category}</span><br>Dist: ${poi.distance}`);
+        });
+            }) ();
+        {% endif %}
+        {% endfor %}
+        });
+    </script>
+</body>
+
+</html>

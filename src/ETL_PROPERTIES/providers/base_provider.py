@@ -28,6 +28,17 @@ class BaseRealEstateProvider(ABC):
         """
         Asegura que el dato final tenga el formato 'Canonical' para la tabla Stage.
         """
+        # Construir features combinando campos base + features del provider
+        base_features = {
+            "bedrooms": raw_item.get("bedrooms"),
+            "bathrooms": raw_item.get("bathrooms"),
+        }
+        provider_features = raw_item.get("features", {})
+        # Merge: provider_features sobrescribe si hay conflicto
+        merged_features = {**base_features, **provider_features}
+        # Limpiar valores vacíos
+        merged_features = {k: v for k, v in merged_features.items() if v not in [None, "", [], {}]}
+        
         return {
             "source_site": self.site_name,
             "ingested_at": datetime.utcnow().isoformat(),
@@ -41,11 +52,7 @@ class BaseRealEstateProvider(ABC):
                 "lng": raw_item.get("lng"),
                 "address": raw_item.get("address")
             },
-            "features": {
-                "bedrooms": raw_item.get("bedrooms"),
-                "bathrooms": raw_item.get("bathrooms"),
-                "garage": raw_item.get("garage")
-            },
+            "features": merged_features,
             "url": raw_item.get("url"),
             "images": raw_item.get("images", []),
             "raw_data_snapshot": raw_item.get("raw") # Por seguridad

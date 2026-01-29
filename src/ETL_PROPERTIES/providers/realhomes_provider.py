@@ -16,6 +16,7 @@ class RealHomesProvider(BaseRealEstateProvider):
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
+        self.supports_date_filter = True
 
     def get_links(self) -> List[Dict[str, Any]]:
         links = []
@@ -24,10 +25,20 @@ class RealHomesProvider(BaseRealEstateProvider):
         
         while True:
             try:
-                # Reducimos a 20 por página para no alertar firewalls
-                params = {"per_page": 20, "page": page, "_fields": "id,link,slug"}
+                # Construir campos dinámicamente
+                fields = "id,link,slug"
+                if self.supports_date_filter:
+                    fields += ",modified_gmt"
+
+                params = {"per_page": 20, "page": page, "_fields": fields}
                 response = requests.get(self.api_url, headers=self.headers, params=params, timeout=10)
                 
+                # Fallbck: Si falla con modified_gmt (400 o 404), intentamos sin él
+                if response.status_code in [400, 404] and self.supports_date_filter:
+                    print(f"⚠️ {self.site_name} no soporta filtro de fecha ({response.status_code}). Desactivando optimización incremental...")
+                    self.supports_date_filter = False
+                    continue # Reintentar inmediatamente sin el campo
+
                 if response.status_code == 400: break
                 response.raise_for_status()
                 
@@ -35,7 +46,12 @@ class RealHomesProvider(BaseRealEstateProvider):
                 if not batch: break
                 
                 for item in batch:
-                    links.append({"wp_id": item["id"], "url": item["link"], "slug": item["slug"]})
+                    links.append({
+                        "wp_id": item["id"], 
+                        "url": item["link"], 
+                        "slug": item["slug"],
+                        "modified_gmt": item.get("modified_gmt") # Puede ser None si falló el fallback
+                    })
                 
                 total_pages = int(response.headers.get("X-WP-TotalPages", 1))
                 print(f"   - Pagina {page}/{total_pages} leída...")
@@ -58,7 +74,7 @@ class RealHomesProvider(BaseRealEstateProvider):
         if not slug: return {}
 
         try:
-            params = {"slug": slug}
+            params = {"slug": slug, "_embed": "true"}
             response = requests.get(self.api_url, headers=self.headers, params=params, timeout=15)
             response.raise_for_status()
             
@@ -79,6 +95,28 @@ class RealHomesProvider(BaseRealEstateProvider):
                     if isinstance(img, dict) and img.get("url"):
                         images.append(img["url"])
 
+            # Extraer amenities de _embedded
+            amenities = []
+            if "_embedded" in item and "wp:term" in item["_embedded"]:
+                for term_list in item["_embedded"]["wp:term"]:
+                    for term in term_list:
+                        if term.get("taxonomy") == "property-feature":
+                            amenities.append(term.get("name"))
+
+            # Construir diccionario de features para JSONB
+            features = {
+                "garage": meta.get("REAL_HOMES_property_garage"),
+                "lot_size_sqm": meta.get("REAL_HOMES_property_lot_size"),
+                "year_built": meta.get("REAL_HOMES_property_year_built"),
+                "address": meta.get("REAL_HOMES_property_address"),
+                "is_featured": meta.get("REAL_HOMES_featured") == "1",
+                "property_id_internal": meta.get("REAL_HOMES_property_id"),
+                "size_unit": meta.get("REAL_HOMES_property_size_postfix"),
+                "amenities": amenities,
+            }
+            # Limpiar valores vacíos
+            features = {k: v for k, v in features.items() if v not in [None, "", [], {}]}
+            
             # Mapeo crudo pero estructurado para el normalizador
             raw_result = {
                 "external_id": str(item.get("id")),
@@ -90,6 +128,7 @@ class RealHomesProvider(BaseRealEstateProvider):
                 "bathrooms": meta.get("REAL_HOMES_property_bathrooms"),
                 "lat": loc.get("latitude"),
                 "lng": loc.get("longitude"),
+                "features": features,
                 "images": images,
                 "raw": item
             }

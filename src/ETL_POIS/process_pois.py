@@ -56,6 +56,73 @@ POI_CATEGORIES = CONFIG['poi_categories']
 KNOWN_BRANDS_MAP = {} # { "OSM Name": "Ideal Brand" }
 IDEAL_BRANDS_LIST = [] # [ "Ideal Brand 1", "Ideal Brand 2" ]
 
+# --- MAPA DE RESCATE DE NOMBRES (Para POIs sin 'name' en OSM) ---
+NAME_RESCUE_MAP = {
+    "sport": {
+        "soccer": "Cancha de Fútbol",
+        "basketball": "Cancha de Baloncesto",
+        "tennis": "Cancha de Tenis",
+        "skateboard": "Skatepark",
+        "swimming": "Piscina",
+        "fitness": "Gimnasio / Fitness"
+    },
+    "leisure": {
+        "pitch": "Área Deportiva",
+        "park": "Parque / Zona Verde",
+        "garden": "Jardín",
+        "playground": "Área de Juegos",
+        "sports_centre": "Polideportivo",
+        "stadium": "Estadio",
+        "swimming_pool": "Piscina Pública",
+        "fitness_centre": "Gimnasio",
+        "golf_course": "Campo de Golf"
+    },
+    "amenity": {
+        "pharmacy": "Farmacia",
+        "clinic": "Clínica / EBAIS",
+        "hospital": "Hospital",
+        "doctors": "Consultorio Médico",
+        "dentist": "Odontología",
+        "bank": "Banco",
+        "atm": "Cajero Automático (ATM)",
+        "restaurant": "Restaurante",
+        "cafe": "Cafetería",
+        "bar": "Bar / Pub",
+        "fast_food": "Comida Rápida",
+        "fuel": "Gasolinera",
+        "charging_station": "Cargador EV",
+        "post_office": "Correos de CR",
+        "police": "Delegación Policial",
+        "fire_station": "Estación de Bomberos",
+        "school": "Centro Educativo / Escuela",
+        "university": "Universidad / Campus",
+        "kindergarten": "Kínder / Guardería",
+        "marketplace": "Feria / Mercado",
+        "veterinary": "Veterinaria"
+    },
+    "shop": {
+        "supermarket": "Supermercado",
+        "convenience": "Abastecedor / MiniSuper",
+        "bakery": "Panadería",
+        "mall": "Centro Comercial",
+        "laundry": "Lavandería",
+        "clothes": "Tienda de Ropa",
+        "hardware": "Ferretería",
+        "electronics": "Tienda Electrónica"
+    },
+    "tourism": {
+        "viewpoint": "Mirador",
+        "museum": "Museo / Galería",
+        "attraction": "Atractivo Turístico",
+        "hotel": "Hotel / Hospedaje"
+    },
+    "natural": {
+        "beach": "Playa",
+        "volcano": "Zona de Volcán",
+        "waterfall": "Catarata"
+    }
+}
+
 if os.path.exists(TOPBRANDS_PATH):
     with open(TOPBRANDS_PATH, 'r') as f:
         tb_data = json.load(f)
@@ -82,7 +149,11 @@ DB_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 # --- FUNCIONES AUXILIARES ---
 
 def generate_poi_hash(name, category, lat, lon):
-    unique_str = f"{name}|{category}|{lat:.6f}|{lon:.6f}"
+    """
+    Genera un hash único para el POI.
+    Excluimos el nombre para que el ID sea estable si cambiamos la lógica de etiquetado.
+    """
+    unique_str = f"{category}|{lat:.6f}|{lon:.6f}"
     return hashlib.sha256(unique_str.encode()).hexdigest()
 
 def normalize_text(text):
@@ -241,17 +312,32 @@ def classify_poi(row):
         if any(re.search(rf"(?<!\w){re.escape(normalize_text(ex))}(?!\w)", name_norm) for ex in exclusions):
             return None, original_name
 
-    # RESCATE DE NOMBRE
+    # RESCATE DE NOMBRE (Jerarquía: Marca > Nombre OSM > Rescate por Tags > Operador > Genérico)
     final_name = original_name
     smart_brand = detect_brand_smart(final_name, tags)
     
-    if assigned_category and not final_name:
-        if smart_brand:
-            final_name = smart_brand + " (POI)"
-        elif 'operator' in tags: 
-            final_name = tags['operator'].title()
+    # Si detectamos una marca curada, esa es la que manda (Preferencia Visual / Stnd)
+    if smart_brand:
+        final_name = smart_brand
+    
+    # Si no hay nombre ni marca, buscamos en el mapa de rescate técnico
+    if not final_name:
+        for tag_key, naming_map in NAME_RESCUE_MAP.items():
+            tag_value = tags.get(tag_key)
+            if tag_value in naming_map:
+                final_name = naming_map[tag_value]
+                break
+    
+    # Si aún no hay nada, intentamos con el operador de OSM
+    if not final_name and 'operator' in tags:
+        final_name = tags['operator'].title()
+        
+    # Último recurso: Categoría genérica limpia
+    if not final_name:
+        if assigned_category:
+            final_name = f"{assigned_category.replace('_', ' ')} (Genérico)"
         else:
-            final_name = f"{assigned_category} Point (System)"
+            final_name = "Punto de Interés (S/N)"
             
     return assigned_category, final_name
 
@@ -402,6 +488,7 @@ def process_and_upload():
         updated_at = CURRENT_TIMESTAMP,
         quality_score = EXCLUDED.quality_score,
         brand = EXCLUDED.brand,
+        name = EXCLUDED.name,
         is_chain = EXCLUDED.is_chain;
     """
     

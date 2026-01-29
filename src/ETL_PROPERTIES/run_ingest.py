@@ -27,9 +27,28 @@ def get_db_connection():
 import sys
 
 def main():
-    # Soporte para filtrar por sitio
-    target_site = sys.argv[1] if len(sys.argv) > 1 else None
+    import argparse
+    parser = argparse.ArgumentParser(description="ETL Properties Ingestor")
+    parser.add_argument("site_name", nargs="?", help="Nombre del sitio (debe coincidir con la DB)")
+    parser.add_argument("--force", action="store_true", help="Forzar re-extracción total ignorando fechas")
+    parser.add_argument("--limit", type=int, default=None, help="Limitar cantidad de propiedades (para pruebas)")
+    args = parser.parse_args()
+
+    target_site = args.site_name
+    force_reextract = args.force
+    limit = args.limit
     
+    if force_reextract:
+        print("⚡ Modo FORCE activado: se re-extraerán TODAS las propiedades.")
+    if limit:
+        print(f"🛑 Límite de prueba activado: {limit} propiedades.")
+    
+    run_ingest(target_site, force_reextract, limit)
+
+def run_ingest(target_site, force_reextract=False, limit=None):
+    """
+    Orquesta la ingesta para un sitio específico
+    """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
@@ -80,16 +99,18 @@ def main():
                 api_endpoint=target['api_endpoint']
             )
             
-            # 2.1 Intentar cargar datos previos para reanudación
+            # 2.1 Intentar cargar datos previos para reanudación (si no es modo force)
             output_path = f"/app/src/ETL_PROPERTIES/output/{target['name'].replace(' ', '_')}.json"
-            provider.load_existing_data(output_path)
+            if not force_reextract:
+                provider.load_existing_data(output_path)
             
-            # 3. Ejecutar extracción inteligente (Opción B)
+            # 3. Ejecutar extracción inteligente
+            # En modo force, pasamos known_data vacío para forzar re-extracción
             provider.run_full_extraction(
-                limit=None, 
+                limit=limit, 
                 output_path=output_path, 
                 client_id=target['client_id'],
-                known_data=known_data
+                known_data={} if force_reextract else known_data
             )
             
             # 4. Guardar JSON normalizado (final)

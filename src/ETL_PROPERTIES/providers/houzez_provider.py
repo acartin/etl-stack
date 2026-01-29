@@ -111,4 +111,3 @@ class HouzezProvider(BaseRealEstateProvider):
         except Exception as e:
             print(f"❌ Error en detalle de {slug} (Houzez): {e}")
             return {}
-

@@ -82,7 +82,9 @@ def get_db_connection():
     )
 
 def calculate_content_hash(item):
-    hash_content = f"{item.get('title')}|{item.get('price')}|{item.get('currency')}|{item.get('sqm')}|{item.get('location', {}).get('lat')}|{item.get('location', {}).get('lng')}"
+    """Hash includes core fields + features to detect any data change."""
+    features_str = json.dumps(item.get('features', {}), sort_keys=True)
+    hash_content = f"{item.get('title')}|{item.get('price')}|{item.get('currency')}|{item.get('sqm')}|{item.get('location', {}).get('lat')}|{item.get('location', {}).get('lng')}|{features_str}"
     return hashlib.sha256(hash_content.encode('utf-8')).hexdigest()
 
 def process_file(filepath, conn):
@@ -184,9 +186,18 @@ def process_file(filepath, conn):
         FROM public.stage_properties s
         WHERE s.batch_id = %(batch_id)s
         ON CONFLICT (client_id, external_prop_id) DO UPDATE SET
-            updated_at = NOW(), -- Siempre marcamos como verificado
+            updated_at = NOW(),
             title = EXCLUDED.title,
             price = EXCLUDED.price,
+            currency_id = EXCLUDED.currency_id,
+            area_sqm = EXCLUDED.area_sqm,
+            bedrooms = EXCLUDED.bedrooms,
+            bathrooms = EXCLUDED.bathrooms,
+            location_lat = EXCLUDED.location_lat,
+            location_lng = EXCLUDED.location_lng,
+            address_street = EXCLUDED.address_street,
+            description = EXCLUDED.description,
+            features = EXCLUDED.features,
             content_hash = EXCLUDED.content_hash,
             status = 'active',
             property_type_id = EXCLUDED.property_type_id
