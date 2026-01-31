@@ -78,8 +78,8 @@ class ImageBaseProvider(ABC):
         source_path = download_info["temp_path"]
         content_hash = download_info["content_hash"]
         
-        # Estructura: /app/storage/images/{client_id}/{property_id}/{hash}.webp
-        relative_path = os.path.join(str(client_id), str(property_id), f"{content_hash}.webp")
+        # Estructura: /app/storage/images/{client_id}/properties/{property_id}/{hash}.webp
+        relative_path = os.path.join(str(client_id), "properties", str(property_id), f"{content_hash}.webp")
         final_abs_path = os.path.join(self.storage_root, relative_path)
         
         # Asegurar directorio de destino

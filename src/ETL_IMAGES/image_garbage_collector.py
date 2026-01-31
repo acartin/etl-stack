@@ -69,11 +69,17 @@ class ImageGarbageCollector:
             if target_client_id and client_uuid != str(target_client_id):
                 continue
             
-            client_path = os.path.join(self.storage_root, client_uuid)
-            properties_dirs = [d for d in os.listdir(client_path) if os.path.isdir(os.path.join(client_path, d))]
+            # Ajuste crítico: Entrar a la subcarpeta 'properties'
+            client_properties_path = os.path.join(self.storage_root, client_uuid, "properties")
+            
+            if not os.path.exists(client_properties_path):
+                # Si no tiene carpeta de propiedades, ignoramos (puede ser solo branding)
+                continue
+
+            properties_dirs = [d for d in os.listdir(client_properties_path) if os.path.isdir(os.path.join(client_properties_path, d))]
 
             for prop_uuid in properties_dirs:
-                prop_path = os.path.join(client_path, prop_uuid)
+                prop_path = os.path.join(client_properties_path, prop_uuid)
                 
                 # NIVEL 1: Limpieza de Propiedad Completa
                 if prop_uuid not in active_prop_ids:

@@ -26,7 +26,7 @@ The system uses a hybrid storage architecture. **Respect paths strictly.**
 
 ### Storage Subfolders (HDD)
 - `/app/storage/datasets_clean`: Processed data (Parquet/DuckDB).
-- `/app/storage/images_web`: Optimized WebP images for frontend.
+- `/app/storage/images`: Optimized WebP images (Inventory & Branding).
 - `/app/storage/documents_arch`: Historical archive of original documents.
 
 ## 🐍 Software Stack & State

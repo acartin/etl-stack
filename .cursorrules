@@ -6,3 +6,8 @@ Before performing ANY action in this project, you MUST read the following files 
 2.  **Universal Rules**: [.agent/rules/behavior.md](file:///app/.agent/rules/behavior.md) - Critical constraints and forbidden actions.
 
 DO NOT guess paths, credentials, or project goals. Use the files above as your one and only Source of Truth.
+
+
+REGLA DE ORO
+NUNCA POR NINGUN MOTIVO BORRES O MODIFIQUES NINGUN ARCHIVO SIN CONSULTAR ANTES, NUNCA, NUNCA NUNCA
+NO INTERPRETES UNA PREGUNTA O CONSULTA COMO UNA ORDEN DE BORRAR O MODIFICAR ALGO, SIEMPRE PREGUNTA ANTES DE MODIFICAR ALGO

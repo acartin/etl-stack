@@ -24,6 +24,12 @@ class FileManager:
         return STORAGE_ROOT / "documents" / str(client_id)
 
     @classmethod
+    def check_file_exists(cls, client_id: UUID, filename: str) -> bool:
+        """Verifica si un archivo ya existe en el directorio del cliente."""
+        file_path = cls._get_client_dir(client_id) / filename
+        return file_path.exists()
+
+    @classmethod
     def save_upload(cls, file_bytes: bytes, filename: str, client_id: UUID) -> str:
         """
         Guarda un archivo subido en el directorio del cliente.

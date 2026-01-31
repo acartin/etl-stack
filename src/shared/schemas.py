@@ -12,6 +12,11 @@ class IngestStatus(str, Enum):
     SYNCED = "SYNCED"
     FAILED = "FAILED"
 
+class AccessLevel(str, Enum):
+    PRIVATE = "private"      # Solo el cliente que lo subió
+    SHARED = "shared"       # Compartido entre departamentos del mismo cliente
+    PUBLIC = "public"       # Conocimiento global de la plataforma
+
 class SourceType(str, Enum):
     PDF_UPLOAD = "knowledge_base"  # Coincide con tu legacy
     WEB_SCRAPE = "web_scrape"
@@ -26,31 +31,39 @@ class DocumentUploadMetadata(BaseModel):
 
 # --- INTERNAL MODELS (Lo que procesamos) ---
 
+class CanonicalMetadata(BaseModel):
+    client_id: UUID
+    category: Optional[str] = "knowledge_base"
+    access_level: AccessLevel = AccessLevel.PRIVATE # Renamed from visibility
+    url: Optional[str] = None
+    source_timestamp: Optional[datetime] = None
+    ingested_at: datetime = Field(default_factory=datetime.utcnow)
+
 class CanonicalDocument(BaseModel):
     """
     Representación unificada de un documento antes de vectorizar.
-    Alineado con 'canonical_document.json' legacy.
+    Alineado con 'canonical_document.json' schema.
     """
     content_id: str = Field(..., description="ID único estable del documento (ej: 'doc_uuid')")
-    client_id: UUID
     source: SourceType
     title: str
     body_content: str
+    metadata: CanonicalMetadata
     hash: str = Field(..., description="SHA-256 del body_content")
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    
-    created_at: datetime = Field(default_factory=datetime.utcnow)
     
     class Config:
         json_schema_extra = {
             "example": {
                 "content_id": "doc_12345",
-                "client_id": "019b4872-51f6-72d3-84c9-45183ff700d0",
                 "source": "knowledge_base",
                 "title": "Manual de Ventas.pdf",
                 "body_content": "Texto extraído del PDF...",
-                "hash": "a4b3c2...",
-                "metadata": {"filename": "original.pdf"}
+                "metadata": {
+                    "client_id": "019b4872-51f6-72d3-84c9-45183ff700d0",
+                    "category": "legal",
+                    "url": "https://example.com/doc.pdf"
+                },
+                "hash": "a4b3c2..."
             }
         }
 
@@ -68,12 +81,16 @@ class SemanticItem(BaseModel):
     hash: str
     embedding: Optional[List[float]] = None # Vector de pgvector
 
-# --- RAG MODELS (Futuro) ---
+# --- RAG MODELS ---
+class RAGFilters(BaseModel):
+    category: Optional[str] = None
+    source: Optional[str] = None
+
 class RAGQuery(BaseModel):
     query_text: str
     client_id: UUID
     top_k: int = 5
-    filters: Optional[Dict[str, Any]] = None
+    filters: Optional[RAGFilters] = None
 
 class RAGResult(BaseModel):
     content_id: str
@@ -81,6 +98,11 @@ class RAGResult(BaseModel):
     body_content: str
     score: float
     metadata: Dict[str, Any]
+
+class RAGResponse(BaseModel):
+    results: List[RAGResult]
+    query_text: str
+    client_id: UUID
 
 
 # --- PROPERTY MODELS (ETL-PROPERTIES) ---

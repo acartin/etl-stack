@@ -47,10 +47,10 @@ To get logo URLs and raw values.
   "border_radius": "4px",
   "box_shadow_style": "0 4px 6px -1px rgb(0 0 0 / 0.1)",
   
-  "logo_header_path": "/app/storage/images/.../logo_header.webp",
-  "logo_square_path": "/app/storage/images/.../logo_square.webp",
-  "banner_main_path": "/app/storage/images/.../banner_main.webp",
-  "banner_promo_path": "/app/storage/images/.../banner_promo.webp",
+  "logo_header_path": "/app/storage/images/.../branding/default/identity/logo_header.webp",
+  "logo_square_path": "/app/storage/images/.../branding/default/identity/logo_square.webp",
+  "banner_main_path": "/app/storage/images/.../branding/default/banners/banner_main.webp",
+  "banner_promo_path": "/app/storage/images/.../branding/default/banners/banner_promo.webp",
   
   "created_at": "2024-01-01T00:00:00Z",
   "updated_at": "2024-01-01T00:00:00Z"

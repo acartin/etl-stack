@@ -18,8 +18,11 @@ class BrandService:
     
     @staticmethod
     def _get_client_images_dir(client_id: UUID, project: str = "default") -> Path:
-        # Structure: /app/storage/images/{client_id}/{project}/
-        return STORAGE_ROOT / "images" / str(client_id) / project
+        """
+        Retorna el directorio raíz de imágenes del cliente para un proyecto específico.
+        Estructura: /app/storage/images/{client_id}/branding/{project}/
+        """
+        return STORAGE_ROOT / "images" / str(client_id) / "branding" / project
 
     @staticmethod
     def get_config(db: Session, client_id: UUID, project: str = "default") -> BrandConfig:
@@ -149,10 +152,12 @@ class BrandService:
         Deletes the brand configuration for a specific project.
         """
         # 1. Delete physical files (Project Folder)
+        # Ahora es seguro borrar todo el directorio del proyecto dentro de 'branding'
         client_dir = cls._get_client_images_dir(client_id, project)
         if client_dir.exists():
             try:
                 shutil.rmtree(client_dir)
+                print(f"Deleted branding project folder: {client_dir}")
             except Exception as e:
                 print(f"Error deleting directory {client_dir}: {e}")
 

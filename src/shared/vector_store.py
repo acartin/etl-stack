@@ -69,6 +69,41 @@ class VectorStore:
         """Calcula SHA-256 del contenido de texto"""
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
+    def register_document_in_db(self, client_id: UUID, filename: str, storage_path: str, content_id: str, access_level: str = 'shared', category: str = 'General'):
+        """Crea el registro inicial en ai_knowledge_documents como PENDING."""
+        if not self.conn or self.conn.closed: self._connect()
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO ai_knowledge_documents 
+                (client_id, filename, storage_path, sync_status, content_hash, access_level, category, created_at)
+                VALUES (%s, %s, %s, 'PENDING', %s, %s, %s, NOW())
+            """, (str(client_id), filename, storage_path, content_id, access_level, category))
+
+    def update_sync_status(self, client_id: UUID, content_id: str, status: str, error_message: str = None):
+        """Actualiza el estado de sincronización y el hash final."""
+        if not self.conn or self.conn.closed: self._connect()
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                UPDATE ai_knowledge_documents 
+                SET sync_status = %s, 
+                    error_message = %s,
+                    last_synced_at = NOW()
+                WHERE client_id = %s AND content_hash = %s
+            """, (status, error_message, str(client_id), content_id))
+
+    def list_documents(self, client_id: UUID) -> List[Dict[str, Any]]:
+        """Lista todos los documentos registrados para un cliente."""
+        if not self.conn or self.conn.closed: self._connect()
+        from psycopg2.extras import RealDictCursor
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT id, filename, sync_status, last_synced_at, created_at, content_hash as content_id, error_message, access_level, category
+                FROM ai_knowledge_documents 
+                WHERE client_id = %s
+                ORDER BY created_at DESC
+            """, (str(client_id),))
+            return cur.fetchall()
+
     def upsert_document(self, doc: CanonicalDocument) -> bool:
         """
         Inserta o actualiza un documento en la tabla semantic_items.
@@ -86,7 +121,7 @@ class VectorStore:
                 cur.execute("""
                     SELECT id, hash FROM ai_vectors 
                     WHERE client_id = %s AND content_id = %s
-                """, (str(doc.client_id), doc.content_id))
+                """, (str(doc.metadata.client_id), doc.content_id))
                 
                 row = cur.fetchone()
                 existing_id = row[0] if row else None
@@ -105,7 +140,12 @@ class VectorStore:
                 embedding_vector = self.get_embedding(doc.body_content)
 
                 # Asegurar que metadata sea JSON válido
-                meta_json = Json(doc.metadata)
+                # Convertir modelo Pydantic a dict compatible con JSON (UUIDs a string)
+                if hasattr(doc.metadata, "model_dump"):
+                    meta_dict = doc.metadata.model_dump(mode='json')
+                else:
+                    meta_dict = doc.metadata
+                meta_json = Json(meta_dict)
 
                 # 3. UPSERT Manual (Evitar ON CONFLICT si falta índice compuesto)
                 if existing_id:
@@ -141,7 +181,7 @@ class VectorStore:
                         cur.execute(sql, (
                             new_id,
                             doc.content_id,
-                            str(doc.client_id),
+                            str(doc.metadata.client_id),
                             doc.source,
                             doc.title,
                             doc.body_content,
@@ -167,23 +207,41 @@ class VectorStore:
             self.conn.rollback() # Rollback manual si falla algo en un bloque no-autocommit implícito
             raise
 
-    def delete_document(self, client_id: UUID, content_id: str):
-        """Borra un documento especifico"""
+    def delete_document(self, client_id: UUID, content_id: str) -> Optional[str]:
+        """Borra un documento de ambas tablas y retorna el nombre del archivo para limpieza física."""
         if not self.conn or self.conn.closed:
             self._connect()
+        
+        filename = None
         with self.conn.cursor() as cur:
+            # 0. Obtener el nombre del archivo antes de borrar el registro
+            cur.execute("""
+                SELECT filename FROM ai_knowledge_documents 
+                WHERE client_id = %s AND content_hash = %s
+            """, (str(client_id), content_id))
+            row = cur.fetchone()
+            if row:
+                filename = row[0]
+
+            # 1. Borrar vectores (el documento base y sus fragmentos)
             cur.execute("""
                 DELETE FROM ai_vectors 
-                WHERE client_id = %s AND content_id = %s
+                WHERE client_id = %s AND (content_id = %s OR content_id LIKE %s)
+            """, (str(client_id), content_id, f"{content_id}_part_%"))
+            
+            # 2. Borrar registro maestro
+            cur.execute("""
+                DELETE FROM ai_knowledge_documents 
+                WHERE client_id = %s AND content_hash = %s
             """, (str(client_id), content_id))
+            
+        return filename
     
     def delete_client(self, client_id: UUID):
-        """Borra TODOS los documentos de un cliente"""
+        """Borra TODO de un cliente en ambas tablas."""
         if not self.conn or self.conn.closed:
             self._connect()
         with self.conn.cursor() as cur:
-            cur.execute("""
-                DELETE FROM ai_vectors 
-                WHERE client_id = %s
-            """, (str(client_id),))
+            cur.execute("DELETE FROM ai_vectors WHERE client_id = %s", (str(client_id),))
+            cur.execute("DELETE FROM ai_knowledge_documents WHERE client_id = %s", (str(client_id),))
 

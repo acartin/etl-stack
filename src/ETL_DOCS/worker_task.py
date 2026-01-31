@@ -6,13 +6,13 @@ from src.ETL_DOCS.processor import DocumentProcessor
 # Configuración de log dedicada al Worker
 logger = logging.getLogger("worker")
 
-def process_document_task(file_path: str, client_id: UUID, content_id: str, original_filename: str):
+def process_document_task(file_path: str, client_id: UUID, content_id: str, original_filename: str, access_level: str = "private", category: str = "knowledge_base"):
     """
     Tarea ejecutable por RQ Worker.
     Es un wrapper simple alrededor del Processor, pero esencial para que RQ pueda
     serializar la llamada (pickle).
     """
-    logger.info(f"👷 [WORKER] Iniciando tarea para: {content_id}")
+    logger.info(f"👷 [WORKER] Iniciando tarea para: {content_id} (Access Level: {access_level}, Category: {category})")
     try:
         # Instanciar procesador fresco para cada tarea (Thread-safe)
         processor = DocumentProcessor()
@@ -21,7 +21,9 @@ def process_document_task(file_path: str, client_id: UUID, content_id: str, orig
             file_path=file_path,
             client_id=client_id,
             content_id=content_id,
-            original_filename=original_filename
+            original_filename=original_filename,
+            access_level=access_level,
+            category=category
         )
         
         logger.info(f"✅ [WORKER] Tarea completada: {result}")

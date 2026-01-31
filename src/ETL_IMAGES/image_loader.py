@@ -1,10 +1,12 @@
 import os
 import json
 import psycopg2
+import time
+import random
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 import logging
-from providers import get_image_provider
+from src.ETL_IMAGES.providers import get_image_provider
 
 # Configuración de Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -139,15 +141,36 @@ class ImageLoader:
                         is_main
                     )
                     total_images_downloaded += 1
-                    # logger.info(f"✨ IMG OK: {os.path.basename(local_rel_path)}")
+                    
+                    # Human-like random sleep between images
+                    # Simulate someone looking at the photos: 0.8 to 2.5 seconds
+                    sleep_time = random.uniform(0.8, 2.5)
+                    time.sleep(sleep_time)
 
         logger.info(f"✅ Finalizado: {total_images_downloaded} imágenes procesadas de {properties_processed_count} propiedades para {os.path.basename(filepath)}")
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="ETL Images Loader")
+    parser.add_argument("--site", help="Nombre del sitio específico a procesar (ej. PremierPropiedades)")
+    parser.add_argument("--limit", type=int, default=None, help="Límite de propiedades a procesar por sitio (None para todas)")
+    args = parser.parse_args()
+
     loader = ImageLoader()
     output_dir = "/app/src/ETL_PROPERTIES/output"
     
-    # Procesar cada JSON disponible en el output de propiedades
-    for filename in os.listdir(output_dir):
-        if filename.endswith(".json"):
-            loader.process_json_file(os.path.join(output_dir, filename), max_properties=20)
+    # Límite por defecto para evitar abusos si no se especifica
+    limit = args.limit if args.limit is not None else 999999
+
+    if args.site:
+        filename = f"{args.site.replace(' ', '_')}.json"
+        filepath = os.path.join(output_dir, filename)
+        if os.path.exists(filepath):
+            loader.process_json_file(filepath, max_properties=limit)
+        else:
+            print(f"❌ No se encontró el archivo para el sitio: {args.site}")
+    else:
+        # Procesar cada JSON disponible en el output de propiedades
+        for filename in sorted(os.listdir(output_dir)):
+            if filename.endswith(".json"):
+                loader.process_json_file(os.path.join(output_dir, filename), max_properties=limit)

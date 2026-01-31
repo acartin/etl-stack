@@ -45,20 +45,28 @@ class ImageAITagger:
             cursor_factory=RealDictCursor
         )
 
-    def get_pending_images(self, limit=5):
+    def get_pending_images(self, limit=5, client_id=None):
         """
         Obtiene imágenes pendientes de procesar.
-        ESTRATEGIA: Prioridad a las imágenes principales (is_main = true).
+        ESTRATEGIA: Solo imágenes principales (is_main = true).
         """
         with self.conn.cursor() as cur:
-            cur.execute("""
-                SELECT id, property_id, local_path, content_hash 
-                FROM public.lead_property_images 
-                WHERE is_processed = FALSE 
-                AND is_main = TRUE
-                ORDER BY created_at DESC
-                LIMIT %s
-            """, (limit,))
+            query = """
+                SELECT i.id, i.property_id, i.local_path, i.content_hash 
+                FROM public.lead_property_images i
+                JOIN public.lead_properties p ON i.property_id = p.id
+                WHERE i.is_processed = FALSE 
+                AND i.is_main = TRUE
+            """
+            params = []
+            if client_id:
+                query += " AND p.client_id = %s"
+                params.append(client_id)
+            
+            query += " ORDER BY i.created_at DESC LIMIT %s"
+            params.append(limit)
+            
+            cur.execute(query, tuple(params))
             return cur.fetchall()
 
     def analyze_image(self, image_path: str):
@@ -126,49 +134,51 @@ class ImageAITagger:
             self.conn.rollback()
             return False
 
-    def run_full_process(self, batch_size=10, max_total_images=50):
-        logger.info(f"🚀 Iniciando Proceso Completo de Etiquetado AI (Lotes de {batch_size}, Límite Total: {max_total_images})...")
+    def run_full_process(self, batch_size=10, max_total_images=50, client_name=None):
+        client_id = None
+        if client_name:
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT id FROM lead_clients WHERE name = %s", (client_name,))
+                row = cur.fetchone()
+                if row:
+                    client_id = row['id']
+                else:
+                    logger.error(f"❌ Cliente no encontrado: {client_name}")
+                    return
+
+        logger.info(f"🚀 Iniciando Etiquetado AI (Límite: {max_total_images}, Cliente: {client_name or 'Todos'})...")
         
         total_processed = 0
-        
-        while True:
-            if total_processed >= max_total_images:
-                logger.info(f"🛑 Se alcanzó el límite de seguridad de {max_total_images} imágenes procesadas por ejecución.")
-                break
-
-            # Ajustar el límite de la consulta SQL si queda menos cupo que el batch_size
+        while total_processed < max_total_images:
             remaining = max_total_images - total_processed
             current_batch_size = min(batch_size, remaining)
             
-            images = self.get_pending_images(current_batch_size)
+            images = self.get_pending_images(current_batch_size, client_id=client_id)
             
             if not images:
-                logger.info("😴 No hay más imágenes principales pendientes. ¡Trabajo terminado!")
+                logger.info("😴 No hay más imágenes principales pendientes.")
                 break
 
-            logger.info(f"📸 Procesando lote de {len(images)} imágenes... (Procesadas hoy: {total_processed})")
-            
             for img in images:
-                logger.info(f"🤖 Analizando: {img['local_path'][:30]}... (ID: {img['id']})")
+                logger.info(f"🤖 Analizando ({total_processed + 1}/{max_total_images}): {img['local_path'][:40]}...")
                 
                 start_time = time.time()
                 tags = self.analyze_image(img['local_path'])
                 duration = time.time() - start_time
                 
                 if tags:
-                    success = self.save_tags(img['id'], tags)
-                    if success:
-                        logger.info(f"✅ OK ({duration:.2f}s) | {tags.get('room_type')} | Q:{tags.get('quality_score')}")
+                    if self.save_tags(img['id'], tags):
+                        logger.info(f"✅ {tags.get('room_type')} | Q:{tags.get('quality_score')} ({duration:.1f}s)")
                         total_processed += 1
-                    else:
-                        logger.warning("⚠️ Fallo guardando en DB.")
-                else:
-                    logger.warning("⚠️ Fallo análisis AI (Posible error de API o imagen corrupta).")
                 
-                # Pausa mínima para no saturar la API
-                time.sleep(1.5)
+                time.sleep(1.2)
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="ETL AI Tagger")
+    parser.add_argument("--site", help="Filtrar por nombre de cliente (ej. premierpropiedades)")
+    parser.add_argument("--limit", type=int, default=50, help="Límite total de imágenes a procesar")
+    args = parser.parse_args()
+
     tagger = ImageAITagger()
-    # Límite duro de 100 imágenes para evitar costos, ajustable según necesidad
-    tagger.run_full_process(batch_size=10, max_total_images=100)
+    tagger.run_full_process(max_total_images=args.limit, client_name=args.site)
