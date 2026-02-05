@@ -3,7 +3,7 @@
 These rules are enforced globally to prevent regression and chaos in the VM.
 
 ## 1. 🛑 Strict Boundaries
-- **No Path Invention**: Never create top-level directories. Stick to `/app/src`, `/app/staging`, and `/app/storage`.
+- **No Path Invention**: Never create top-level directories. Stick to `/app/src` and `/app/data`.
 - **No Library Pollution**: Do not install new Python libraries without explicit user consent.
 - **No Module Modification**: Do not modify files in `/app/src/shared/` unless specifically requested.
 

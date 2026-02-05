@@ -43,8 +43,8 @@ from src.BRAND_CONFIG.router import router as brand_router
 app.include_router(brand_router)
 
 # Mount Storage for Images
-if os.path.exists("/app/storage"):
-    app.mount("/storage", StaticFiles(directory="/app/storage"), name="storage")
+if os.path.exists("/app/data/storage"):
+    app.mount("/storage", StaticFiles(directory="/app/data/storage"), name="storage")
 
 @app.get("/health")
 def health_check():

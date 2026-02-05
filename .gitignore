@@ -8,8 +8,9 @@ src/*.txt
 
 # --- Datos y Almacenamiento ---
 src/ETL_PROPERTIES/output/
-staging/
-storage/
+data/staging/
+data/storage/
+data/lost+found/
 temp/
 
 # --- Python ---

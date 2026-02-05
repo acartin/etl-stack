@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.BRAND_CONFIG.database import SessionLocal
 from src.BRAND_CONFIG.models import BrandConfig
 
-STORAGE_ROOT = Path(os.getenv("PATH_STORAGE", "/app/storage"))
+STORAGE_ROOT = Path(os.getenv("PATH_STORAGE", "/app/data/storage"))
 IMAGES_ROOT = STORAGE_ROOT / "images"
 
 def garbage_collect_images():

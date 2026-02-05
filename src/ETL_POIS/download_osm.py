@@ -3,7 +3,7 @@ import os
 import sys
 
 # Definición de rutas según filesystem_map.md (HOT DATA en NVMe)
-TARGET_DIR = "/app/staging/data_raw"
+TARGET_DIR = "/app/data/staging/data_raw"
 URL = "https://download.geofabrik.de/central-america/costa-rica-latest.osm.pbf"
 FILENAME = "costa-rica-latest.osm.pbf"
 OUTPUT_PATH = os.path.join(TARGET_DIR, FILENAME)

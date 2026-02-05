@@ -17,8 +17,8 @@ class ImageBaseProvider(ABC):
     """
 
     def __init__(self):
-        self.staging_root = "/app/staging/ETL_IMAGES/tmp"
-        self.storage_root = "/app/storage/images"
+        self.staging_root = "/app/data/staging/ETL_IMAGES/tmp"
+        self.storage_root = "/app/data/storage/images"
         
         # El loader se encargará de crear las carpetas específicas por propiedad
         os.makedirs(self.staging_root, exist_ok=True)
@@ -78,7 +78,7 @@ class ImageBaseProvider(ABC):
         source_path = download_info["temp_path"]
         content_hash = download_info["content_hash"]
         
-        # Estructura: /app/storage/images/{client_id}/properties/{property_id}/{hash}.webp
+        # Estructura: /app/data/storage/images/{client_id}/properties/{property_id}/{hash}.webp
         relative_path = os.path.join(str(client_id), "properties", str(property_id), f"{content_hash}.webp")
         final_abs_path = os.path.join(self.storage_root, relative_path)
         

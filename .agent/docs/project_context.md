@@ -15,19 +15,19 @@ The system uses a hybrid storage architecture. **Respect paths strictly.**
 | Path | Hardware | Purpose |
 | :--- | :--- | :--- |
 | `/app/src` | System | Python scripts, logic, and `.env`. |
-| `/app/staging` | **NVMe** | **HOT DATA**: Downloads, temporary processing, unzipping. |
-| `/app/storage` | **HDD (4TB)** | **COLD DATA**: Final datasets (Parquet), archived images/PDFs. |
+| `/app/data/staging` | **NVMe** | **HOT DATA**: Downloads, temporary processing, unzipping. |
+| `/app/data/storage` | **HDD (4TB)** | **COLD DATA**: Final datasets (Parquet), archived images/PDFs. |
 
 ### Staging Subfolders (NVMe)
-- `/app/staging/data_raw`: Incoming raw files (CSV/JSON/Excel).
-- `/app/staging/documents_in`: PDFs waiting for OCR.
-- `/app/staging/images_raw`: Original high-res photos.
-- `/app/staging/temp_work`: Workspace for `.zip` or `.pbf` extraction.
+- `/app/data/staging/data_raw`: Incoming raw files (CSV/JSON/Excel).
+- `/app/data/staging/documents_in`: PDFs waiting for OCR.
+- `/app/data/staging/images_raw`: Original high-res photos.
+- `/app/data/staging/temp_work`: Workspace for `.zip` or `.pbf` extraction.
 
 ### Storage Subfolders (HDD)
-- `/app/storage/datasets_clean`: Processed data (Parquet/DuckDB).
-- `/app/storage/images`: Optimized WebP images (Inventory & Branding).
-- `/app/storage/documents_arch`: Historical archive of original documents.
+- `/app/data/storage/datasets_clean`: Processed data (Parquet/DuckDB).
+- `/app/data/storage/images`: Optimized WebP images (Inventory & Branding).
+- `/app/data/storage/documents_arch`: Historical archive of original documents.
 
 ## 🐍 Software Stack & State
 - **Language**: Python 3 (installed via `apt` and `pip` with `--break-system-packages`).

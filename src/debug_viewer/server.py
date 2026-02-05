@@ -14,8 +14,8 @@ load_dotenv("/app/src/.env")
 app = FastAPI(title="Image Debugger", docs_url=None, redoc_url=None)
 
 # 1. Montar directorio de imágenes estáticas
-# Esto permite acceder a /app/storage/images usando la URL http://.../images/
-STORAGE_ROOT = "/app/storage/images"
+# Esto permite acceder a /app/data/storage/images usando la URL http://.../images/
+STORAGE_ROOT = "/app/data/storage/images"
 app.mount("/images", StaticFiles(directory=STORAGE_ROOT), name="images")
 
 # 2. Configurar Templates

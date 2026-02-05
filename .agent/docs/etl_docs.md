@@ -10,7 +10,7 @@ Este módulo implementa el pipeline de ingesta, procesamiento y vectorización d
 
 ## 📂 Estructura y Conectividad
 - **Service URL**: `http://192.168.0.40:8000`
-- `/shared/file_manager.py`: Almacenamiento físico en `/app/storage/documents/`.
+- `/shared/file_manager.py`: Almacenamiento físico en `/app/data/storage/documents/`.
 - `/shared/vector_store.py`: Gestión de embeddings y Postgres/pgvector.
 - `/ETL_DOCS/processor.py`: Lógica de extracción Texto/OCR.
 
@@ -25,6 +25,8 @@ Todos los endpoints tienen el prefijo base `/documents`.
     - `file`: Archivo binario (MIME type obligatoriamente `application/pdf`).
     - `client_id`: UUID del cliente propietario del recurso.
     - `content_id`: (Opcional) Identificador único para el documento. Si no se provee, se genera un UUID.
+    - `access_level` (Form): `private` (default) o `shared`.
+    - `category` (Form): `knowledge_base` (default) o string libre.
 - **Respuesta (202 Accepted)**:
     ```json
     {
@@ -35,6 +37,8 @@ Todos los endpoints tienen el prefijo base `/documents`.
         "queue_position": 1
     }
     ```
+- **Errores**:
+    - `409 Conflict`: Si el archivo ya existe (físicamente o en DB).
 
 ### 2. Listado de Documentos (Poblar Grid)
 `GET /list/{client_id}`
@@ -51,6 +55,8 @@ Todos los endpoints tienen el prefijo base `/documents`.
                 "filename": "contrato.pdf",
                 "sync_status": "SYNCED",
                 "content_id": "doc_...",
+                "access_level": "private",
+                "category": "knowledge_base",
                 "created_at": "..."
             }
         ]

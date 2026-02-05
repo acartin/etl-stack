@@ -17,7 +17,7 @@ from difflib import SequenceMatcher
 load_dotenv("/app/src/.env")
 
 # Rutas y Nombres de Tabla (Hardcoded o Env)
-INPUT_PBF = "/app/staging/data_raw/costa-rica-latest.osm.pbf"
+INPUT_PBF = "/app/data/staging/data_raw/costa-rica-latest.osm.pbf"
 TABLE_NAME = "stage_pois_osm"
 
 # --- CONFIGURACIÓN TÉCNICA (Constantes) ---

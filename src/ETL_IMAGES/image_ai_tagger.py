@@ -33,7 +33,7 @@ class ImageAITagger:
     def __init__(self):
         self.conn = self.get_db_connection()
         self.model = genai.GenerativeModel(MODEL_NAME)
-        self.storage_root = "/app/storage/images"
+        self.storage_root = "/app/data/storage/images"
 
     def get_db_connection(self):
         return psycopg2.connect(

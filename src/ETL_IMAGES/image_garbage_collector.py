@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class ImageGarbageCollector:
     def __init__(self):
         load_dotenv("/app/src/.env")
-        self.storage_root = "/app/storage/images"
+        self.storage_root = "/app/data/storage/images"
         self.conn = self.get_db_connection()
 
     def get_db_connection(self):

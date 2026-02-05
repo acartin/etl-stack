@@ -12,7 +12,7 @@ from .models import BrandConfig
 from .schemas import BrandConfigCreate, BrandConfigUpdate
 from .utils import calculate_text_contrast
 
-STORAGE_ROOT = Path(os.getenv("PATH_STORAGE", "/app/storage"))
+STORAGE_ROOT = Path(os.getenv("PATH_STORAGE", "/app/data/storage"))
 
 class BrandService:
     
@@ -20,7 +20,7 @@ class BrandService:
     def _get_client_images_dir(client_id: UUID, project: str = "default") -> Path:
         """
         Retorna el directorio raíz de imágenes del cliente para un proyecto específico.
-        Estructura: /app/storage/images/{client_id}/branding/{project}/
+        Estructura: /app/data/storage/images/{client_id}/branding/{project}/
         """
         return STORAGE_ROOT / "images" / str(client_id) / "branding" / project
 

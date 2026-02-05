@@ -9,14 +9,14 @@ from uuid import UUID
 logger = logging.getLogger(__name__)
 
 # Definir la raíz del almacenamiento. 
-# En producción Docker, /app/storage está montado al disco grande.
-STORAGE_ROOT = Path(os.getenv("PATH_STORAGE", "/app/storage"))
+# En producción Docker, /app/data/storage está montado al disco grande.
+STORAGE_ROOT = Path(os.getenv("PATH_STORAGE", "/app/data/storage"))
 
 class FileManager:
     """
     Gestor centralizado de archivos físicos en disco.
     Asegura que todos los archivos se guarden bajo la estructura:
-    /app/storage/documents/{client_id}/{filename}
+    /app/data/storage/documents/{client_id}/{filename}
     """
 
     @staticmethod
