@@ -1,5 +1,6 @@
 
 import logging
+import os
 import io
 import hashlib
 from uuid import UUID
@@ -126,13 +127,16 @@ class DocumentProcessor:
                 logger.info(f"Procesando fragmento: {chunk_id}")
                 chunk_hash = self.vector_store.calculate_hash(item['text'])
                 
-                # Construir metadata usando el nuevo nombre de campo consistente
+                # Construir metadata con información del modelo de embeddings
                 meta = CanonicalMetadata(
                     client_id=client_id,
                     category=category,
                     access_level=access_level,
                     url=None,
-                    source_timestamp=None
+                    source_timestamp=None,
+                    # Metadata extra para tracking de versiones
+                    embedding_model=os.getenv("EMBEDDING_MODEL", "models/gemini-embedding-001"),
+                    embedding_dimension=3072
                 )
                 
                 doc = CanonicalDocument(

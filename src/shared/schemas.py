@@ -39,6 +39,9 @@ class CanonicalMetadata(BaseModel):
     source_timestamp: Optional[datetime] = None
     ingested_at: datetime = Field(default_factory=datetime.utcnow)
 
+    class Config:
+        extra = "allow"
+
 class CanonicalDocument(BaseModel):
     """
     Representación unificada de un documento antes de vectorizar.

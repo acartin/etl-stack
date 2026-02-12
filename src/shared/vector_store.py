@@ -11,7 +11,8 @@ from uuid import UUID
 
 import psycopg2
 from psycopg2.extras import Json
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 from src.shared.schemas import CanonicalDocument
@@ -20,12 +21,13 @@ from src.shared.schemas import CanonicalDocument
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-# Configurar Google GenAI
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "models/text-embedding-004")
+# Configurar Google GenAI Client (nuevo SDK)
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+client = genai.Client(api_key=GOOGLE_API_KEY)
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "models/gemini-embedding-001")
 
 # Configurar DB
-DB_HOST = os.getenv("DB_HOST", "192.168.0.31")
+DB_HOST = os.getenv("DB_HOST", "192.168.0.37")
 DB_NAME = os.getenv("DB_NAME", "agentic") # Usamos la variable de entorno, default agentic
 DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
@@ -51,16 +53,16 @@ class VectorStore:
             raise
 
     def get_embedding(self, text: str) -> List[float]:
-        """Genera embedding usando Google Gemini"""
+        """Genera embedding usando Google Gemini (SDK moderno)"""
         try:
-            # Gemini soporta task_type para optimizar (RETRIEVAL_DOCUMENT para guardar)
-            result = genai.embed_content(
+            result = client.models.embed_content(
                 model=EMBEDDING_MODEL,
-                content=text,
-                task_type="retrieval_document",
-                title="Embedding generation" # Opcional pero recomendado por API
+                contents=text,
+                config=types.EmbedContentConfig(
+                    task_type="RETRIEVAL_DOCUMENT"
+                )
             )
-            return result['embedding']
+            return result.embeddings[0].values
         except Exception as e:
             logger.error(f"Error generando embedding con Google AI: {e}")
             raise
