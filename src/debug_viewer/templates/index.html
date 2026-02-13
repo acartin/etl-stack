@@ -238,13 +238,17 @@
                     <div class="property-price">
                         {{ prop.currency }} {{ "{:,.0f}".format(prop.price) }}
                     </div>
-                    {% if prop.public_url %}
                     <div style="margin-top: 5px;">
+                        {% if prop.public_url %}
                         <a href="{{ prop.public_url }}" target="_blank"
                             style="font-size: 0.85rem; color: #4299e1; text-decoration: none; border: 1px solid #4299e1; padding: 2px 8px; border-radius: 4px;">VER
                             ORIGINAL ↗</a>
+                        {% endif %}
+                        <a href="/property/{{ prop.id }}" target="_blank"
+                            style="font-size: 0.85rem; color: #2f855a; text-decoration: none; border: 1px solid #2f855a; padding: 2px 8px; border-radius: 4px; margin-left: 6px;">
+                            TEST VELOCIDAD ↗
+                        </a>
                     </div>
-                    {% endif %}
                 </div>
             </div>
 
@@ -262,7 +266,7 @@
                     {% endif %}
 
                     {% if main_image %}
-                    <img src="/images/{{ main_image.local_path }}" class="main-img-display" alt="Main Property Image">
+                    <img src="{{ main_image.image_url }}" class="main-img-display" alt="Main Property Image">
                     <div
                         style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
                         {{ main_image.filename }}
@@ -306,7 +310,7 @@
                     {% if img.is_main %}
                     <div class="badge">Main</div>
                     {% endif %}
-                    <img src="/images/{{ img.local_path }}" loading="lazy" alt="Property Image">
+                    <img src="{{ img.image_url }}" loading="lazy" alt="Property Image">
 
                     {% if img.tags %}
                     <div style="background: #f7fafc; padding: 6px; border-bottom: 1px solid #edf2f7;">
